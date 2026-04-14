@@ -564,7 +564,24 @@ body {
 .ro-item.current .ro-label,
 .ro-item.next .ro-label { display: inline; margin-left: 0.15rem; }
 
+.ro-item.clickable { cursor: pointer; }
+.ro-item.clickable:hover { transform: scale(1.05); border-color: var(--forest); }
+
 .ro-check { display: none; font-size: 0.7rem; }
+
+/* Delete question button (host only) */
+.btn-delete-q {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0 0.3rem;
+  line-height: 1;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+.btn-delete-q:hover { color: #c0392b; }
 
 /* Empty state */
 .empty-state {

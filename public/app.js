@@ -86,14 +86,26 @@ presenterSelect.addEventListener('change', () => {
 });
 
 const btnReset = document.getElementById('btn-reset');
+const btnResetPresenters = document.getElementById('btn-reset-presenters');
+const btnClearQuestions = document.getElementById('btn-clear-questions');
 
 btnQuickfire.addEventListener('click', () => socket.emit('start-quickfire'));
 btnNextQ.addEventListener('click', () => socket.emit('next-question'));
 btnPrevQ.addEventListener('click', () => socket.emit('prev-question'));
 btnEndQf.addEventListener('click', () => socket.emit('end-quickfire'));
 btnReset.addEventListener('click', () => {
-  if (confirm('Reset the entire meeting? This clears all questions, votes, and presenter progress.')) {
+  if (confirm('Reset everything? This clears all questions, votes, and presenter progress.')) {
     socket.emit('reset-meeting');
+  }
+});
+btnResetPresenters.addEventListener('click', () => {
+  if (confirm('Reset presenters back to the beginning? Questions will be kept.')) {
+    socket.emit('reset-presenters');
+  }
+});
+btnClearQuestions.addEventListener('click', () => {
+  if (confirm('Delete all questions and votes?')) {
+    socket.emit('clear-questions');
   }
 });
 
@@ -287,6 +299,20 @@ function renderQuestions(s) {
     card.appendChild(rank);
     card.appendChild(voteCol);
     card.appendChild(content);
+
+    // Host gets a delete button on each question
+    if (s.isHost) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-delete-q';
+      delBtn.innerHTML = '&times;';
+      delBtn.title = 'Delete this question';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        socket.emit('delete-question', { questionId: q.id });
+      });
+      card.appendChild(delBtn);
+    }
+
     questionsList.appendChild(card);
   });
 }
@@ -302,12 +328,19 @@ function renderRunningOrder(s) {
     const isDone = s.completedPresenters.includes(p);
     const isCurrent = p === s.currentPresenter;
     const isNext = !isCurrent && !isDone && currentIdx >= 0 && idx === currentIdx + 1;
-    // Also handle "next" when no current presenter: first non-completed
     const isNextWaiting = !s.currentPresenter && !isDone && idx === (s.completedPresenters.length);
 
     if (isDone) item.classList.add('done');
     else if (isCurrent) item.classList.add('current');
     else if (isNext || isNextWaiting) item.classList.add('next');
+
+    // Host can click any pill to start that presenter
+    if (s.isHost) {
+      item.classList.add('clickable');
+      item.addEventListener('click', () => {
+        socket.emit('set-presenter', { presenter: p });
+      });
+    }
 
     const dot = document.createElement('span');
     dot.className = 'ro-dot';

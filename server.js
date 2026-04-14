@@ -9,8 +9,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// ── Moderator token ──────────────────────────────────────────────
-const HOST_TOKEN = crypto.randomUUID().slice(0, 8);
+// ── Moderator token (set HOST_TOKEN env var on Render for a permanent URL) ──
+const HOST_TOKEN = process.env.HOST_TOKEN || 'homeplay-host';
 
 // ── Static files ─────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
@@ -230,6 +230,28 @@ io.on('connection', (socket) => {
     if (socket.id !== state.hostSocketId) return;
     state.quickfireActive = false;
     state.quickfireIndex = -1;
+    broadcastState();
+  });
+
+  socket.on('delete-question', ({ questionId }) => {
+    if (socket.id !== state.hostSocketId) return;
+    state.questions = state.questions.filter(q => q.id !== questionId);
+    broadcastState();
+  });
+
+  socket.on('clear-questions', () => {
+    if (socket.id !== state.hostSocketId) return;
+    state.questions = [];
+    nextQuestionId = 1;
+    broadcastState();
+  });
+
+  socket.on('reset-presenters', () => {
+    if (socket.id !== state.hostSocketId) return;
+    clearPresenterTimeout();
+    state.currentPresenter = null;
+    state.presenterStartedAt = null;
+    state.completedPresenters = [];
     broadcastState();
   });
 
