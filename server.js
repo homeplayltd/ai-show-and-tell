@@ -158,7 +158,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('submit-question', ({ text, forPresenter }) => {
-    if (state.quickfireActive) return; // locked
     const user = state.users.get(socket.id);
     if (!user || !text || !text.trim() || !forPresenter) return;
     state.questions.push({

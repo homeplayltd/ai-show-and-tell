@@ -145,13 +145,19 @@ input, select, textarea { font: inherit; color: inherit; }
 #join-screen .join-eyebrow {
   color: var(--sand);
   opacity: 0.55;
-  margin-bottom: var(--s-7);
+  /* Clear-space below the logo ≥ logo height (20px) — honoured by s-8 margin */
+  margin-bottom: var(--s-8);
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  /* Clear-space around the logo ≥ logo 'H' height */
+  gap: var(--s-5);
 }
 
-#join-screen .join-eyebrow img { height: 16px; }
+#join-screen .join-eyebrow img {
+  height: 20px;
+  /* Ensure visual clear space even against adjacent dots */
+  margin-right: var(--s-2);
+}
 #join-screen .join-eyebrow .dot {
   width: 3px; height: 3px; border-radius: 50%;
   background: var(--sand); opacity: 0.7;
@@ -259,7 +265,8 @@ input, select, textarea { font: inherit; color: inherit; }
 .app-header {
   background: var(--near-black);
   color: var(--sand);
-  padding: var(--s-4) var(--s-6);
+  /* Vertical padding ≥ logo 'H' height (22px) to honour clear-space rule */
+  padding: 22px var(--s-6);
   display: flex;
   align-items: center;
   gap: var(--s-5);
@@ -270,6 +277,8 @@ input, select, textarea { font: inherit; color: inherit; }
   height: 22px;
   filter: brightness(0) invert(1);
   opacity: 0.95;
+  /* Brand guideline: clear space ≥ height of the 'H' in the wordmark (~22px) */
+  margin-right: var(--s-5);
 }
 
 .app-header h2 {

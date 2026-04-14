@@ -125,11 +125,16 @@ function render() {
   userBadge.textContent = s.myName;
   userCount.textContent = s.userCount + ' online';
 
-  // Current presenter
-  if (s.currentPresenter) {
-    currentPresenterBadge.textContent = 'Presenting: ' + s.currentPresenter;
+  // Current presenter (hide entirely during quickfire)
+  if (s.quickfireActive) {
+    currentPresenterBadge.style.display = 'none';
   } else {
-    currentPresenterBadge.textContent = 'No presenter yet';
+    currentPresenterBadge.style.display = '';
+    if (s.currentPresenter) {
+      currentPresenterBadge.textContent = 'Presenting: ' + s.currentPresenter;
+    } else {
+      currentPresenterBadge.textContent = 'No presenter yet';
+    }
   }
 
   // Host bar
@@ -174,13 +179,11 @@ function render() {
     });
   }
 
-  // Quickfire mode
+  // Quickfire mode (questions remain open for submission)
   if (s.quickfireActive) {
     quickfireBanner.classList.add('active');
-    questionForm.classList.add('locked');
   } else {
     quickfireBanner.classList.remove('active');
-    questionForm.classList.remove('locked');
   }
 
   // Quickfire current question
@@ -291,7 +294,7 @@ function renderQuestions(s) {
 
     const meta = document.createElement('div');
     meta.className = 'question-meta';
-    meta.innerHTML = '<span class="asker">' + escHtml(q.askedBy) + '</span><span class="arrow">\u2192</span><span class="target">' + escHtml(q.forPresenter) + '</span>';
+    meta.innerHTML = '<span class="asker">' + escHtml(q.askedBy) + '</span> asks <span class="target">' + escHtml(q.forPresenter) + '</span>';
 
     const text = document.createElement('div');
     text.className = 'question-text';
