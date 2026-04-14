@@ -174,6 +174,10 @@ io.on('connection', (socket) => {
   socket.on('upvote', ({ questionId }) => {
     const q = state.questions.find(q => q.id === questionId);
     if (!q) return;
+    const user = state.users.get(socket.id);
+    if (!user) return;
+    // Can't upvote your own question
+    if (q.askedBy === user.name) return;
     // Toggle upvote
     if (q.upvotes.has(socket.id)) {
       q.upvotes.delete(socket.id);

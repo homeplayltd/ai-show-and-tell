@@ -277,10 +277,16 @@ function renderQuestions(s) {
     const voteCol = document.createElement('div');
     voteCol.className = 'vote-col';
 
+    const isOwnQuestion = q.askedBy === s.myName;
     const upBtn = document.createElement('button');
-    upBtn.className = 'btn-upvote' + (q.upvotedByMe ? ' voted' : '');
+    upBtn.className = 'btn-upvote' + (q.upvotedByMe ? ' voted' : '') + (isOwnQuestion ? ' own' : '');
     upBtn.innerHTML = '&#9650;';
-    upBtn.addEventListener('click', () => socket.emit('upvote', { questionId: q.id }));
+    if (isOwnQuestion) {
+      upBtn.disabled = true;
+      upBtn.title = 'You can\u2019t upvote your own question';
+    } else {
+      upBtn.addEventListener('click', () => socket.emit('upvote', { questionId: q.id }));
+    }
 
     const voteCount = document.createElement('div');
     voteCount.className = 'vote-count';

@@ -807,6 +807,17 @@ input, select, textarea { font: inherit; color: inherit; }
   background: var(--forest);
   color: var(--sand);
 }
+.btn-upvote.own {
+  cursor: not-allowed;
+  opacity: 0.35;
+  background: transparent;
+  border-style: dashed;
+}
+.btn-upvote.own:hover {
+  border-color: var(--hairline);
+  background: transparent;
+  color: var(--sage);
+}
 
 .vote-count {
   font-family: var(--font-sans);
