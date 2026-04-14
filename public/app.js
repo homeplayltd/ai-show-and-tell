@@ -27,6 +27,10 @@ const filterTabs = document.getElementById('filter-tabs');
 const questionsList = document.getElementById('questions-list');
 const emptyState = document.getElementById('empty-state');
 
+const schedulePanel = document.getElementById('schedule-panel');
+const runningOrder = document.getElementById('running-order');
+const timerDisplay = document.getElementById('timer-display');
+
 const quickfireBanner = document.getElementById('quickfire-banner');
 const quickfireCurrent = document.getElementById('quickfire-current');
 const qfNumber = document.getElementById('qf-number');
@@ -38,6 +42,7 @@ const qfVotes = document.getElementById('qf-votes');
 let currentState = null;
 let activeFilter = 'all';
 let myName = '';
+let timerInterval = null;
 
 // ── Join ─────────────────────────────────────────────────────────
 const savedName = localStorage.getItem('showandtell-name');
@@ -163,6 +168,15 @@ function render() {
     quickfireCurrent.classList.remove('active');
   }
 
+  // Schedule panel (hide during quickfire)
+  if (s.quickfireActive) {
+    schedulePanel.classList.add('hidden');
+  } else {
+    schedulePanel.classList.remove('hidden');
+    renderRunningOrder(s);
+    startTimer(s);
+  }
+
   // Build filter tabs
   renderFilterTabs(s);
 
@@ -262,6 +276,94 @@ function renderQuestions(s) {
     card.appendChild(content);
     questionsList.appendChild(card);
   });
+}
+
+function renderRunningOrder(s) {
+  const currentIdx = s.presenters.indexOf(s.currentPresenter);
+  runningOrder.innerHTML = '';
+
+  s.presenters.forEach((p, idx) => {
+    const item = document.createElement('div');
+    item.className = 'ro-item';
+
+    const isDone = s.completedPresenters.includes(p);
+    const isCurrent = p === s.currentPresenter;
+    const isNext = !isCurrent && !isDone && currentIdx >= 0 && idx === currentIdx + 1;
+    // Also handle "next" when no current presenter: first non-completed
+    const isNextWaiting = !s.currentPresenter && !isDone && idx === (s.completedPresenters.length);
+
+    if (isDone) item.classList.add('done');
+    else if (isCurrent) item.classList.add('current');
+    else if (isNext || isNextWaiting) item.classList.add('next');
+
+    const dot = document.createElement('span');
+    dot.className = 'ro-dot';
+    item.appendChild(dot);
+
+    if (isDone) {
+      const check = document.createElement('span');
+      check.className = 'ro-check';
+      check.textContent = '\u2713';
+      item.appendChild(check);
+    }
+
+    const name = document.createElement('span');
+    name.textContent = p;
+    item.appendChild(name);
+
+    if (isCurrent) {
+      const label = document.createElement('span');
+      label.className = 'ro-label';
+      label.textContent = 'NOW';
+      item.appendChild(label);
+    } else if (isNext || isNextWaiting) {
+      const label = document.createElement('span');
+      label.className = 'ro-label';
+      label.textContent = 'NEXT';
+      item.appendChild(label);
+    }
+
+    runningOrder.appendChild(item);
+  });
+}
+
+function startTimer(s) {
+  // Clear any existing timer
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  if (!s.currentPresenter || !s.presenterStartedAt) {
+    timerDisplay.textContent = 'Waiting to start...';
+    timerDisplay.className = 'timer-display inactive';
+    return;
+  }
+
+  function tick() {
+    const elapsed = Date.now() - s.presenterStartedAt;
+    const totalMs = s.presentationDuration * 1000;
+    const remaining = Math.max(0, totalMs - elapsed);
+    const secs = Math.ceil(remaining / 1000);
+    const m = Math.floor(secs / 60);
+    const ss = String(secs % 60).padStart(2, '0');
+
+    timerDisplay.textContent = m + ':' + ss;
+    timerDisplay.className = 'timer-display';
+
+    if (secs <= 60 && secs > 0) {
+      timerDisplay.classList.add('warning');
+    }
+    if (secs === 0) {
+      timerDisplay.textContent = '0:00';
+      timerDisplay.classList.add('warning');
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  tick(); // run immediately
+  timerInterval = setInterval(tick, 1000);
 }
 
 function escHtml(str) {

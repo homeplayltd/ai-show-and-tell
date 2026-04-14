@@ -11,12 +11,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ── In-memory state ──────────────────────────────────────────────
 
-const PRESENTERS = ['Robert', 'Kyle', 'Tim', 'Chris', 'Matt Irvin', 'James', 'Adam'];
+const PRESENTERS = ['Robert', 'Kyle', 'Tim', 'Chris', 'Matt', 'James', 'Adam'];
 
 let state = {
   presenters: PRESENTERS,
   questions: [],          // { id, text, askedBy, forPresenter, upvotes: Set, timestamp }
   currentPresenter: null,
+  presenterStartedAt: null,   // epoch ms when current presenter started
+  presentationDuration: 360,  // seconds per presenter (6 min)
+  completedPresenters: [],    // presenters who have finished
   quickfireActive: false,
   quickfireIndex: -1,
   users: new Map(),       // socketId -> { name }
@@ -29,6 +32,9 @@ function getPublicState() {
   return {
     presenters: state.presenters,
     currentPresenter: state.currentPresenter,
+    presenterStartedAt: state.presenterStartedAt,
+    presentationDuration: state.presentationDuration,
+    completedPresenters: state.completedPresenters,
     quickfireActive: state.quickfireActive,
     quickfireIndex: state.quickfireIndex,
     questions: state.questions.map(q => ({
@@ -110,7 +116,12 @@ io.on('connection', (socket) => {
 
   socket.on('set-presenter', ({ presenter }) => {
     if (socket.id !== state.hostSocketId) return;
-    state.currentPresenter = presenter;
+    // Mark previous presenter as completed
+    if (state.currentPresenter && presenter !== state.currentPresenter && !state.completedPresenters.includes(state.currentPresenter)) {
+      state.completedPresenters.push(state.currentPresenter);
+    }
+    state.currentPresenter = presenter || null;
+    state.presenterStartedAt = presenter ? Date.now() : null;
     broadcastState();
   });
 
