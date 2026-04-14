@@ -291,7 +291,7 @@ function renderQuestions(s) {
 
     const meta = document.createElement('div');
     meta.className = 'question-meta';
-    meta.innerHTML = '<span class="asker">' + escHtml(q.askedBy) + '</span> asks <span class="target">' + escHtml(q.forPresenter) + '</span>';
+    meta.innerHTML = '<span class="asker">' + escHtml(q.askedBy) + '</span><span class="arrow">\u2192</span><span class="target">' + escHtml(q.forPresenter) + '</span>';
 
     const text = document.createElement('div');
     text.className = 'question-text';
