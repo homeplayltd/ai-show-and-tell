@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Show &amp; Tell - Homeplay</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Join Screen -->
+  <div id="join-screen">
+    <img src="/img/Homeplay-Logo-White.png" alt="Homeplay" class="logo">
+    <h1>AI Show &amp; Tell</h1>
+    <p class="subtitle">Submit questions, upvote the best ones, quickfire Q&amp;A at the end</p>
+    <div class="join-form">
+      <input type="text" id="name-input" placeholder="Your name" maxlength="30" autocomplete="off">
+      <button id="join-btn">Join</button>
+    </div>
+  </div>
+
+  <!-- App Screen -->
+  <div id="app-screen">
+
+    <!-- Header -->
+    <header class="app-header">
+      <img src="/img/Homeplay-Logo-White.png" alt="Homeplay" class="logo">
+      <h2>AI Show &amp; Tell</h2>
+      <div class="header-meta">
+        <span class="presenter-badge" id="current-presenter-badge">No presenter yet</span>
+        <span class="user-badge" id="user-badge"></span>
+        <span id="user-count"></span>
+      </div>
+    </header>
+
+    <!-- Host Controls -->
+    <div class="host-bar" id="host-bar">
+      <label>Presenting:</label>
+      <select id="presenter-select"></select>
+      <div class="spacer"></div>
+      <button class="btn-host primary" id="btn-quickfire">Start Quickfire</button>
+      <button class="btn-host secondary" id="btn-prev-q" style="display:none">Prev</button>
+      <button class="btn-host primary" id="btn-next-q" style="display:none">Next Question</button>
+      <button class="btn-host danger" id="btn-end-qf" style="display:none">End Quickfire</button>
+    </div>
+
+    <!-- Quickfire banner -->
+    <div class="quickfire-banner" id="quickfire-banner">Quickfire Q&amp;A Round</div>
+
+    <!-- Main body -->
+    <main class="app-body">
+
+      <!-- Quickfire current question -->
+      <div class="quickfire-current" id="quickfire-current">
+        <div class="qf-number" id="qf-number"></div>
+        <div class="qf-label" id="qf-label"></div>
+        <div class="qf-question" id="qf-question"></div>
+        <div class="qf-votes" id="qf-votes"></div>
+      </div>
+
+      <!-- Question form -->
+      <div class="question-form" id="question-form">
+        <h3>Ask a Question</h3>
+        <div class="form-row">
+          <select id="for-presenter">
+            <option value="">Question for...</option>
+          </select>
+          <input type="text" id="question-input" placeholder="Type your question..." maxlength="300">
+          <button class="btn-submit" id="submit-btn">Ask</button>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs" id="filter-tabs"></div>
+
+      <!-- Questions list -->
+      <div class="questions-list" id="questions-list">
+        <div class="empty-state" id="empty-state">
+          <div class="icon">?</div>
+          <p>No questions yet. Be the first to ask one!</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

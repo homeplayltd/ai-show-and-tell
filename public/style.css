@@ -1,0 +1,476 @@
+/* ── Fonts ─────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Saans';
+  src: url('/fonts/SaansRegular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Saans';
+  src: url('/fonts/SaansSemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JHA Times Now';
+  src: url('/fonts/JHA_Times_Now_SemiLight.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Brand tokens ─────────────────────────────────────────────── */
+:root {
+  --sand: #F2E0D6;
+  --sage: #828073;
+  --olive: #707052;
+  --forest: #213017;
+  --near-black: #111111;
+  --black: #000000;
+  --white: #FFFFFF;
+  --sand-light: #FAF3EE;
+  --sand-mid: #E8D0C2;
+  --forest-light: #2d4120;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+/* ── Reset & base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Saans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--sand-light);
+  color: var(--near-black);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── Join screen ──────────────────────────────────────────────── */
+#join-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--forest);
+  color: var(--white);
+  padding: 2rem;
+}
+
+#join-screen .logo {
+  width: 200px;
+  margin-bottom: 1rem;
+}
+
+#join-screen h1 {
+  font-family: 'JHA Times Now', Georgia, serif;
+  font-weight: 300;
+  font-size: 2.2rem;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+#join-screen .subtitle {
+  color: var(--sage);
+  font-size: 0.95rem;
+  margin-bottom: 2.5rem;
+}
+
+.join-form {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.join-form input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--olive);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.join-form input::placeholder { color: var(--sage); }
+.join-form input:focus { border-color: var(--sand); }
+
+.join-form button {
+  padding: 0.75rem 1.5rem;
+  background: var(--sand);
+  color: var(--forest);
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.join-form button:hover { background: var(--sand-mid); }
+
+/* ── App layout ───────────────────────────────────────────────── */
+#app-screen { display: none; }
+#app-screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* Header */
+.app-header {
+  background: var(--forest);
+  color: var(--white);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.app-header .logo { height: 28px; }
+
+.app-header h2 {
+  font-family: 'JHA Times Now', Georgia, serif;
+  font-weight: 300;
+  font-size: 1.2rem;
+  flex: 1;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--sage);
+}
+
+.header-meta .user-badge {
+  background: rgba(255,255,255,0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  color: var(--sand);
+}
+
+.presenter-badge {
+  background: var(--olive);
+  color: var(--white);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Host bar */
+.host-bar {
+  background: var(--near-black);
+  color: var(--white);
+  padding: 0.5rem 1.5rem;
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+.host-bar.active { display: flex; }
+
+.host-bar label { color: var(--sage); font-weight: 600; }
+
+.host-bar select {
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--olive);
+  background: var(--forest);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.host-bar .spacer { flex: 1; }
+
+.btn-host {
+  padding: 0.35rem 0.85rem;
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-host:hover { opacity: 0.85; }
+.btn-host.primary { background: var(--sand); color: var(--forest); }
+.btn-host.danger { background: #c0392b; color: var(--white); }
+.btn-host.secondary { background: var(--olive); color: var(--white); }
+
+/* Main content */
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  gap: 1.25rem;
+}
+
+/* Question form */
+.question-form {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.question-form h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--forest);
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-row select, .form-row input, .form-row textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid #ddd;
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-row select:focus, .form-row input:focus, .form-row textarea:focus {
+  border-color: var(--forest);
+}
+
+.form-row select { min-width: 160px; }
+.form-row input, .form-row textarea { flex: 1; }
+
+.btn-submit {
+  padding: 0.6rem 1.25rem;
+  background: var(--forest);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-submit:hover { background: var(--forest-light); }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.question-form.locked {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.question-form.locked::after {
+  content: 'Questions locked - Quickfire round in progress';
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+  color: var(--olive);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Filter tabs */
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1.5px solid #ddd;
+  background: var(--white);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--near-black);
+}
+.filter-tab:hover { border-color: var(--olive); }
+.filter-tab.active {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+/* Question cards */
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.question-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.question-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.question-card.highlighted {
+  border: 2px solid var(--forest);
+  background: #f0f7ed;
+  transform: scale(1.01);
+}
+
+.vote-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+}
+
+.btn-upvote {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  background: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 1.1rem;
+}
+.btn-upvote:hover { border-color: var(--forest); background: var(--sand-light); }
+.btn-upvote.voted {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--white);
+}
+
+.vote-count {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 0.2rem;
+  color: var(--forest);
+}
+
+.question-content { flex: 1; }
+
+.question-meta {
+  font-size: 0.8rem;
+  color: var(--sage);
+  margin-bottom: 0.3rem;
+}
+
+.question-meta .asker { font-weight: 600; color: var(--olive); }
+.question-meta .target { font-weight: 600; color: var(--forest); }
+
+.question-text {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.question-rank {
+  font-family: 'JHA Times Now', Georgia, serif;
+  font-size: 1.4rem;
+  color: var(--sage);
+  min-width: 2rem;
+  text-align: center;
+}
+
+/* Quickfire overlay */
+.quickfire-banner {
+  display: none;
+  background: var(--forest);
+  color: var(--white);
+  text-align: center;
+  padding: 0.6rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.quickfire-banner.active { display: block; }
+
+.quickfire-current {
+  display: none;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border: 2px solid var(--forest);
+}
+.quickfire-current.active { display: block; }
+
+.quickfire-current .qf-number {
+  font-family: 'JHA Times Now', Georgia, serif;
+  font-size: 1rem;
+  color: var(--sage);
+  margin-bottom: 0.5rem;
+}
+
+.quickfire-current .qf-label {
+  font-size: 0.85rem;
+  color: var(--olive);
+  margin-bottom: 0.75rem;
+}
+
+.quickfire-current .qf-asker {
+  font-weight: 600;
+  color: var(--forest);
+  font-size: 1.1rem;
+}
+
+.quickfire-current .qf-target {
+  font-weight: 600;
+  color: var(--olive);
+  font-size: 1.1rem;
+}
+
+.quickfire-current .qf-question {
+  font-family: 'JHA Times Now', Georgia, serif;
+  font-size: 1.6rem;
+  line-height: 1.4;
+  margin: 1rem 0;
+  color: var(--near-black);
+}
+
+.quickfire-current .qf-votes {
+  font-size: 0.9rem;
+  color: var(--sage);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--sage);
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.empty-state p { font-size: 0.95rem; }
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .form-row { flex-direction: column; }
+  .form-row select { min-width: unset; }
+  .app-header { padding: 0.5rem 1rem; }
+  .app-body { padding: 1rem 0.75rem; }
+  .question-card { padding: 0.75rem; gap: 0.75rem; }
+  .quickfire-current .qf-question { font-size: 1.2rem; }
+  .join-form { flex-direction: column; }
+}

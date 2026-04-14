@@ -1,0 +1,14 @@
+{
+  "name": "ai-show-and-tell",
+  "version": "1.0.0",
+  "description": "Live Q&A board for AI Show and Tell meetings",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "socket.io": "^4.7.5"
+  }
+}
