@@ -32,7 +32,7 @@ app.get('/moderator/:token', (req, res) => {
 
 // ── In-memory state ──────────────────────────────────────────────
 
-const PRESENTERS = ['Robert', 'Kyle', 'Tim', 'Chris', 'Matt', 'James', 'Adam'];
+const PRESENTERS = ['OneTouch', 'Global Wave', 'rhome', 'Personal Tech', 'AudioWorks', 'Homeplay', 'Boston Automations'];
 
 let state = {
   presenters: PRESENTERS,
