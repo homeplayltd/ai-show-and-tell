@@ -2,12 +2,33 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const crypto = require('crypto');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// ── Moderator token ──────────────────────────────────────────────
+const HOST_TOKEN = crypto.randomUUID().slice(0, 8);
+
+// ── Static files ─────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ── Moderator route ──────────────────────────────────────────────
+app.get('/moderator/:token', (req, res) => {
+  if (req.params.token !== HOST_TOKEN) {
+    // Invalid token — serve plain audience view
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+  // Valid token — inject moderator flag into the page
+  const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+  const injected = html.replace(
+    '</head>',
+    `<script>window.__IS_MODERATOR = true; window.__HOST_TOKEN = "${HOST_TOKEN}";</script>\n</head>`
+  );
+  res.send(injected);
+});
 
 // ── In-memory state ──────────────────────────────────────────────
 
@@ -22,11 +43,12 @@ let state = {
   completedPresenters: [],    // presenters who have finished
   quickfireActive: false,
   quickfireIndex: -1,
-  users: new Map(),       // socketId -> { name }
+  users: new Map(),       // socketId -> { name, isModerator }
   hostSocketId: null,
 };
 
 let nextQuestionId = 1;
+let presenterTimeout = null;  // auto-advance timer
 
 function getPublicState() {
   return {
@@ -70,18 +92,64 @@ function broadcastState() {
   }
 }
 
+// ── Auto-advance logic ───────────────────────────────────────────
+
+function clearPresenterTimeout() {
+  if (presenterTimeout) {
+    clearTimeout(presenterTimeout);
+    presenterTimeout = null;
+  }
+}
+
+function startPresenterTimeout() {
+  clearPresenterTimeout();
+  if (!state.currentPresenter || state.quickfireActive) return;
+
+  presenterTimeout = setTimeout(() => {
+    advanceToNextPresenter();
+  }, state.presentationDuration * 1000);
+}
+
+function advanceToNextPresenter() {
+  if (!state.currentPresenter) return;
+
+  const currentIdx = state.presenters.indexOf(state.currentPresenter);
+
+  // Mark current as completed
+  if (!state.completedPresenters.includes(state.currentPresenter)) {
+    state.completedPresenters.push(state.currentPresenter);
+  }
+
+  // Find next presenter
+  const nextIdx = currentIdx + 1;
+  if (nextIdx < state.presenters.length) {
+    state.currentPresenter = state.presenters[nextIdx];
+    state.presenterStartedAt = Date.now();
+    startPresenterTimeout();
+  } else {
+    // All presenters done
+    state.currentPresenter = null;
+    state.presenterStartedAt = null;
+  }
+
+  broadcastState();
+}
+
 // ── Socket.io events ─────────────────────────────────────────────
 
 io.on('connection', (socket) => {
   console.log(`Connected: ${socket.id}`);
 
-  socket.on('join', ({ name }) => {
+  socket.on('join', ({ name, hostToken }) => {
     if (!name || !name.trim()) return;
-    state.users.set(socket.id, { name: name.trim() });
-    // First user becomes host
-    if (!state.hostSocketId) {
+    const isModerator = hostToken === HOST_TOKEN;
+    state.users.set(socket.id, { name: name.trim(), isModerator });
+
+    // Moderator always becomes host
+    if (isModerator) {
       state.hostSocketId = socket.id;
     }
+
     broadcastState();
   });
 
@@ -122,12 +190,20 @@ io.on('connection', (socket) => {
     }
     state.currentPresenter = presenter || null;
     state.presenterStartedAt = presenter ? Date.now() : null;
+    startPresenterTimeout();
     broadcastState();
   });
 
   socket.on('start-quickfire', () => {
     if (socket.id !== state.hostSocketId) return;
+    clearPresenterTimeout();
+    // Mark current presenter as done if there is one
+    if (state.currentPresenter && !state.completedPresenters.includes(state.currentPresenter)) {
+      state.completedPresenters.push(state.currentPresenter);
+    }
     state.quickfireActive = true;
+    state.currentPresenter = null;
+    state.presenterStartedAt = null;
     // Sort questions by votes and set index to first
     state.questions = getSortedQuestions();
     state.quickfireIndex = state.questions.length > 0 ? 0 : -1;
@@ -157,6 +233,19 @@ io.on('connection', (socket) => {
     broadcastState();
   });
 
+  socket.on('reset-meeting', () => {
+    if (socket.id !== state.hostSocketId) return;
+    clearPresenterTimeout();
+    state.questions = [];
+    state.currentPresenter = null;
+    state.presenterStartedAt = null;
+    state.completedPresenters = [];
+    state.quickfireActive = false;
+    state.quickfireIndex = -1;
+    nextQuestionId = 1;
+    broadcastState();
+  });
+
   socket.on('transfer-host', ({ socketId }) => {
     if (socket.id !== state.hostSocketId) return;
     if (state.users.has(socketId)) {
@@ -166,12 +255,18 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    const user = state.users.get(socket.id);
     state.users.delete(socket.id);
+
     if (socket.id === state.hostSocketId) {
-      // Transfer host to next user
-      const next = state.users.keys().next();
-      state.hostSocketId = next.done ? null : next.value;
+      // Try to find another moderator connection
+      let newHost = null;
+      for (const [sid, u] of state.users) {
+        if (u.isModerator) { newHost = sid; break; }
+      }
+      state.hostSocketId = newHost; // null if no moderator connected
     }
+
     broadcastState();
     console.log(`Disconnected: ${socket.id}`);
   });
@@ -182,4 +277,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`AI Show & Tell Q&A running on http://localhost:${PORT}`);
+  console.log(`\n  Moderator URL: http://localhost:${PORT}/moderator/${HOST_TOKEN}\n`);
+  console.log(`  Share the base URL with participants: http://localhost:${PORT}/`);
+  console.log(`  Keep the moderator URL private — it gives you host controls.\n`);
 });

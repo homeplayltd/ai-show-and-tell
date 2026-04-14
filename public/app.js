@@ -38,6 +38,10 @@ const qfLabel = document.getElementById('qf-label');
 const qfQuestion = document.getElementById('qf-question');
 const qfVotes = document.getElementById('qf-votes');
 
+// ── Moderator detection ──────────────────────────────────────────
+const isModerator = !!window.__IS_MODERATOR;
+const hostToken = window.__HOST_TOKEN || null;
+
 // ── State ────────────────────────────────────────────────────────
 let currentState = null;
 let activeFilter = 'all';
@@ -53,7 +57,9 @@ function doJoin() {
   if (!name) return;
   myName = name;
   localStorage.setItem('showandtell-name', name);
-  socket.emit('join', { name });
+  const joinData = { name };
+  if (isModerator && hostToken) joinData.hostToken = hostToken;
+  socket.emit('join', joinData);
   joinScreen.style.display = 'none';
   appScreen.classList.add('active');
 }
@@ -79,10 +85,17 @@ presenterSelect.addEventListener('change', () => {
   socket.emit('set-presenter', { presenter: presenterSelect.value || null });
 });
 
+const btnReset = document.getElementById('btn-reset');
+
 btnQuickfire.addEventListener('click', () => socket.emit('start-quickfire'));
 btnNextQ.addEventListener('click', () => socket.emit('next-question'));
 btnPrevQ.addEventListener('click', () => socket.emit('prev-question'));
 btnEndQf.addEventListener('click', () => socket.emit('end-quickfire'));
+btnReset.addEventListener('click', () => {
+  if (confirm('Reset the entire meeting? This clears all questions, votes, and presenter progress.')) {
+    socket.emit('reset-meeting');
+  }
+});
 
 // ── State rendering ──────────────────────────────────────────────
 socket.on('state', (state) => {
@@ -375,6 +388,8 @@ function escHtml(str) {
 // ── Reconnect handling ───────────────────────────────────────────
 socket.on('connect', () => {
   if (myName) {
-    socket.emit('join', { name: myName });
+    const joinData = { name: myName };
+    if (isModerator && hostToken) joinData.hostToken = hostToken;
+    socket.emit('join', joinData);
   }
 });
