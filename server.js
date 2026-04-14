@@ -43,6 +43,8 @@ let state = {
   completedPresenters: [],    // presenters who have finished
   quickfireActive: false,
   quickfireIndex: -1,
+  quickfireQuestionStartedAt: null,  // epoch ms when current QF question started
+  quickfireQuestionDuration: 90,     // seconds per question (1 min 30s)
   users: new Map(),       // socketId -> { name, isModerator }
   hostSocketId: null,
 };
@@ -59,6 +61,8 @@ function getPublicState() {
     completedPresenters: state.completedPresenters,
     quickfireActive: state.quickfireActive,
     quickfireIndex: state.quickfireIndex,
+    quickfireQuestionStartedAt: state.quickfireQuestionStartedAt,
+    quickfireQuestionDuration: state.quickfireQuestionDuration,
     questions: state.questions.map(q => ({
       id: q.id,
       text: q.text,
@@ -207,6 +211,7 @@ io.on('connection', (socket) => {
     // Sort questions by votes and set index to first
     state.questions = getSortedQuestions();
     state.quickfireIndex = state.questions.length > 0 ? 0 : -1;
+    state.quickfireQuestionStartedAt = state.quickfireIndex >= 0 ? Date.now() : null;
     broadcastState();
   });
 
@@ -214,6 +219,7 @@ io.on('connection', (socket) => {
     if (socket.id !== state.hostSocketId) return;
     if (state.quickfireIndex < state.questions.length - 1) {
       state.quickfireIndex++;
+      state.quickfireQuestionStartedAt = Date.now();
       broadcastState();
     }
   });
@@ -222,6 +228,7 @@ io.on('connection', (socket) => {
     if (socket.id !== state.hostSocketId) return;
     if (state.quickfireIndex > 0) {
       state.quickfireIndex--;
+      state.quickfireQuestionStartedAt = Date.now();
       broadcastState();
     }
   });
@@ -230,6 +237,7 @@ io.on('connection', (socket) => {
     if (socket.id !== state.hostSocketId) return;
     state.quickfireActive = false;
     state.quickfireIndex = -1;
+    state.quickfireQuestionStartedAt = null;
     broadcastState();
   });
 

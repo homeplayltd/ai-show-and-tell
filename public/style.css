@@ -417,6 +417,23 @@ body {
 }
 .quickfire-current.active { display: block; }
 
+.quickfire-current .qf-timer {
+  font-family: 'JHA Times Now', Georgia, serif;
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: var(--forest);
+  line-height: 1;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.quickfire-current .qf-timer.qf-warning {
+  color: #e67e22;
+}
+.quickfire-current .qf-timer.qf-over {
+  color: #c0392b;
+  animation: pulse-warning 1s ease-in-out infinite;
+}
+
 .quickfire-current .qf-number {
   font-family: 'JHA Times Now', Georgia, serif;
   font-size: 1rem;

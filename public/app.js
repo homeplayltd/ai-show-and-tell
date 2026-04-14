@@ -33,6 +33,7 @@ const timerDisplay = document.getElementById('timer-display');
 
 const quickfireBanner = document.getElementById('quickfire-banner');
 const quickfireCurrent = document.getElementById('quickfire-current');
+const qfTimer = document.getElementById('qf-timer');
 const qfNumber = document.getElementById('qf-number');
 const qfLabel = document.getElementById('qf-label');
 const qfQuestion = document.getElementById('qf-question');
@@ -47,6 +48,7 @@ let currentState = null;
 let activeFilter = 'all';
 let myName = '';
 let timerInterval = null;
+let qfTimerInterval = null;
 
 // ── Join ─────────────────────────────────────────────────────────
 const savedName = localStorage.getItem('showandtell-name');
@@ -189,8 +191,10 @@ function render() {
     qfLabel.innerHTML = '<span class="qf-asker">' + escHtml(q.askedBy) + '</span> asks <span class="qf-target">' + escHtml(q.forPresenter) + '</span>';
     qfQuestion.textContent = q.text;
     qfVotes.textContent = q.upvoteCount + ' vote' + (q.upvoteCount !== 1 ? 's' : '');
+    startQfTimer(s);
   } else {
     quickfireCurrent.classList.remove('active');
+    stopQfTimer();
   }
 
   // Schedule panel (hide during quickfire)
@@ -410,6 +414,50 @@ function startTimer(s) {
 
   tick(); // run immediately
   timerInterval = setInterval(tick, 1000);
+}
+
+function stopQfTimer() {
+  if (qfTimerInterval) {
+    clearInterval(qfTimerInterval);
+    qfTimerInterval = null;
+  }
+}
+
+function startQfTimer(s) {
+  stopQfTimer();
+  if (!s.quickfireQuestionStartedAt) return;
+
+  function qfTick() {
+    const elapsed = Date.now() - s.quickfireQuestionStartedAt;
+    const totalMs = s.quickfireQuestionDuration * 1000;
+    const remaining = totalMs - elapsed;
+
+    qfTimer.className = 'qf-timer';
+
+    if (remaining > 0) {
+      // Counting down
+      const secs = Math.ceil(remaining / 1000);
+      const m = Math.floor(secs / 60);
+      const ss = String(secs % 60).padStart(2, '0');
+      qfTimer.textContent = m + ':' + ss;
+
+      // Warning when under 30 seconds
+      if (secs <= 30) {
+        qfTimer.classList.add('qf-warning');
+      }
+    } else {
+      // Over time — count up
+      const overMs = Math.abs(remaining);
+      const overSecs = Math.floor(overMs / 1000);
+      const m = Math.floor(overSecs / 60);
+      const ss = String(overSecs % 60).padStart(2, '0');
+      qfTimer.textContent = '+' + m + ':' + ss + ' over';
+      qfTimer.classList.add('qf-over');
+    }
+  }
+
+  qfTick();
+  qfTimerInterval = setInterval(qfTick, 1000);
 }
 
 function escHtml(str) {
